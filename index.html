@@ -66,7 +66,7 @@
             <a href="#home" class="logo">Jomel<span class="accent">B.</span></a>
             <ul class="nav-links">
                 <li><a href="#home" class="active">Home</a></li>
-                <li><a href="#about">Profile</a></li>
+                <li><a href="#about">About</a></li>
                 <li><a href="#skills">Skills</a></li>
                 <li><a href="#experience">Experience</a></li>
                 <li><a href="#education">Education</a></li>
@@ -84,10 +84,10 @@
             <div class="container hero-container">
                 <div class="hero-content reveal">
                     <p class="subtitle">Welcome to my resume</p>
+                    <h1 class="accent glow" id="typewriter-name">JOMEL B.<br><span style="color: #ffffff;">DARANTINAW</span></h1>
                     <div id="editable-hero" class="editable-region">
-                        <h1 class="accent glow typewriter" id="typewriter-name">JOMEL B. DARANTINAW</h1>
-                        <h2 class="role-title">Maintenance & Construction Professional</h2>
-                        <p class="description">To obtain a position that will enable me to use my strong communication skill and ability to work well with people. With extensive experience in masonry, carpentry, and maintenance.</p>
+                        <h2 class="static-role" id="static-role" style="font-size: 2rem; color: var(--text-secondary); margin-bottom: 1.5rem;">Multi-Skilled Technical Specialist</h2>
+                        <p class="description">Performance-driven professional with over 11 years of extensive experience in equipment maintenance, high-quality masonry, and carpentry. Specializing in technical inspection and operational safety across multiple industrial facilities.</p>
                     </div>
                     <div class="hero-cta">
                         <a id="resume-download-link" href="https://drive.google.com/file/d/1D_qBtZvgGN0AZkoV10E4_caC23HmxwSr/view?usp=sharing"
@@ -112,14 +112,11 @@
         <!-- About / Profile Section -->
         <section id="about" class="about" style="padding-top: 50px;">
             <div class="container">
-                <h2 class="section-title reveal">My <span class="accent">Profile</span></h2>
+                <h2 class="section-title reveal">About <span class="accent">Me</span></h2>
                 <div class="about-content">
                     <div class="about-text reveal-left glass" style="padding: 3rem; text-align: left;">
                         <div id="editable-about" class="editable-region">
-                            <p style="text-align: left; font-size: 1.1rem;">To obtain a position that will enable me
-                                to use my strong communication skill and ability to work well with people. With
-                                extensive experience in construction, masonry, carpentry, checking, and equipment
-                                maintenance across various industries.</p>
+                            <p style="text-align: left; font-size: 1.1rem;">A versatile and results-driven individual with a strong background in the construction and manufacturing industries. I specialize in a wide range of technical skills including masonry, tiling, and carpentry. My career is built on a foundation of hard work, adaptability, and a continuous drive to support team goals through efficient workplace maintenance and quality inspection.</p>
                         </div>
 
                         <div
@@ -163,6 +160,7 @@
                 <div id="editable-skills" class="skills-grid reveal editable-region"
                     style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
                     <div class="skill-card glass" style="text-align: left; padding: 2rem;">
+                        <h3 style="color: var(--accent-color); margin-bottom: 1rem;"><i class="fas fa-tools"></i> Technical Skills</h3>
                         <ul style="list-style: none; line-height: 2.2; color: var(--text-primary);">
                             <li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> Masonry (Plastering, Cementing, Finishing)</li>
                             <li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> Tile Setting and Installation</li>
@@ -174,6 +172,7 @@
                         </ul>
                     </div>
                     <div class="skill-card glass" style="text-align: left; padding: 2rem;">
+                        <h3 style="color: var(--accent-color); margin-bottom: 1rem;"><i class="fas fa-user-shield"></i> Core Competencies</h3>
                         <ul style="list-style: none; line-height: 2.2; color: var(--text-primary);">
                             <li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> Knowledge in Safety Procedures</li>
                             <li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> Physically Fit and Hardworking</li>
@@ -199,105 +198,112 @@
                         onclick="removeLastExperienceItem()"><i class="fas fa-trash"></i> Remove Last</button>
                 </div>
 
-                <div id="editable-experience" class="timeline reveal editable-region">
+                <div id="editable-experience" class="timeline reveal-left editable-region">
+                    <!-- 1. Sabellano Meat -->
                     <div class="timeline-item">
                         <div class="timeline-dot"></div>
                         <div class="timeline-content glass">
                             <h3>Sabellano Meat & Poultry Processing Plant</h3>
                             <span class="timeline-date">2022 - Present | Checker / Maintenance</span>
-                            <ul
-                                style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
+                            <ul style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
                                 <li style="margin-bottom: 0.5rem;">Checked product quality and quantity</li>
                                 <li style="margin-bottom: 0.5rem;">Performed maintenance of equipment</li>
                                 <li>Ensured cleanliness and compliance with safety standards</li>
                             </ul>
                         </div>
                     </div>
+
+                    <!-- 2. RG Pangilinan -->
                     <div class="timeline-item">
                         <div class="timeline-dot"></div>
                         <div class="timeline-content glass">
                             <h3>RG Pangilinan Architects</h3>
                             <span class="timeline-date">2018 - 2022 | Tile Setter / Mason / Carpenter</span>
-                            <ul
-                                style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
+                            <ul style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
                                 <li style="margin-bottom: 0.5rem;">Installed tiles and performed finishing works</li>
                                 <li style="margin-bottom: 0.5rem;">Handled carpentry and masonry tasks</li>
                                 <li>Ensured accuracy and quality of installations</li>
                             </ul>
                         </div>
                     </div>
+
+                    <!-- 3. Metro Star -->
                     <div class="timeline-item">
                         <div class="timeline-dot"></div>
                         <div class="timeline-content glass">
                             <h3>Metro Star</h3>
                             <span class="timeline-date">2016 - 2017 | Steelman</span>
-                            <ul
-                                style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
+                            <ul style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
                                 <li style="margin-bottom: 0.5rem;">Executed masonry and finishing tasks</li>
                                 <li style="margin-bottom: 0.5rem;">Worked with construction team on-site</li>
                                 <li>Maintained tools and equipment</li>
                             </ul>
                         </div>
                     </div>
+
+                    <!-- 4. MDC Altaraza -->
                     <div class="timeline-item">
                         <div class="timeline-dot"></div>
                         <div class="timeline-content glass">
                             <h3>MDC Altaraza</h3>
                             <span class="timeline-date">2015 - 2016 | Steelman</span>
-                            <ul
-                                style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
+                            <ul style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
                                 <li style="margin-bottom: 0.5rem;">Performed masonry work (cementing, plastering)</li>
                                 <li style="margin-bottom: 0.5rem;">Prepared construction materials</li>
                                 <li>Ensured quality of finished work</li>
                             </ul>
                         </div>
                     </div>
+
+                    <!-- 5. Grey Hound -->
                     <div class="timeline-item">
                         <div class="timeline-dot"></div>
                         <div class="timeline-content glass">
                             <h3>Grey Hound Company</h3>
                             <span class="timeline-date">2013 - 2014 | Steelman</span>
-                            <ul
-                                style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
+                            <ul style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
                                 <li style="margin-bottom: 0.5rem;">Handled steel materials and fabrication tasks</li>
                                 <li style="margin-bottom: 0.5rem;">Assisted in construction projects</li>
                                 <li>Followed safety standards</li>
                             </ul>
                         </div>
                     </div>
+
+                    <!-- 6. Oishi Company -->
                     <div class="timeline-item">
                         <div class="timeline-dot"></div>
                         <div class="timeline-content glass">
                             <h3>Oishi Company</h3>
                             <span class="timeline-date">2012 - 2013 | Maintenance</span>
-                            <ul
-                                style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
+                            <ul style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
                                 <li style="margin-bottom: 0.5rem;">Performed machine and facility maintenance</li>
                                 <li style="margin-bottom: 0.5rem;">Ensured cleanliness and safety of equipment</li>
                                 <li>Assisted in repairs and troubleshooting</li>
                             </ul>
                         </div>
                     </div>
+
+                    <!-- 7. Sealine -->
                     <div class="timeline-item">
                         <div class="timeline-dot"></div>
                         <div class="timeline-content glass">
                             <h3>Sealine</h3>
                             <span class="timeline-date">2011 - 2012 | Helper</span>
-                            <ul
-                                style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
+                            <ul style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
                                 <li style="margin-bottom: 0.5rem;">Assisted in production and operations</li>
                                 <li style="margin-bottom: 0.5rem;">Maintained cleanliness of work area</li>
                                 <li>Followed safety procedures</li>
                             </ul>
                         </div>
                     </div>
+
+                    <!-- 8. Tinio Elementary -->
                     <div class="timeline-item">
                         <div class="timeline-dot"></div>
                         <div class="timeline-content glass">
                             <h3>Tinio Elementary School</h3>
                             <span class="timeline-date">2008 - 2010 | Helper</span>
-                            <ul
-                                style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
+                            <ul style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
                                 <li style="margin-bottom: 0.5rem;">Assisted in maintenance and cleaning of school facilities</li>
                                 <li style="margin-bottom: 0.5rem;">Supported skilled workers in daily tasks</li>
                                 <li>Handled basic tools and materials</li>
@@ -341,17 +347,7 @@
                 
                 <!-- Review List -->
                 <div id="reviews-container" class="reviews-grid reveal">
-                    <!-- Reviews will be loaded here via JS -->
-                    <div class="review-card glass">
-                        <p class="review-text">"Earl is a highly dedicated IT professional. His technical skills and problem-solving abilities were a great asset to our team."</p>
-                        <div class="review-author">
-                            <i class="fas fa-user-tie accent"></i>
-                            <div>
-                                <h4>Juan Dela Cruz</h4>
-                                <p>Manager, NKB Manufacturing</p>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Reviews will be loaded here via Supabase -->
                 </div>
 
                 <!-- Leave a Review Form -->
@@ -402,25 +398,32 @@
 
                         <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--glass-border);">
                             <h4 style="margin-bottom: 1.5rem; font-size: 1.2rem;">References</h4>
-                            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1.2rem;">
+                            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1.2rem; min-height: 3em;">
                                 <strong>Hon. Michael B. Capuno</strong><br>Brgy. Captain<br>Maquiapo, Guagua, Pampanga
                             </p>
                         </div>
                     </div>
-                    <form class="contact-form glass">
+                    <form id="contact-form" action="https://formsubmit.co/jomelbdarantinaw@gmail.com" method="POST" class="contact-form glass">
+                        <!-- FormSubmit Configuration -->
+                        <input type="hidden" name="_subject" value="New Contact Inquiry from Resume Website">
+                        <input type="hidden" name="_template" value="table">
+                        <input type="hidden" name="_next" value="https://jomel-resume.vercel.app/#contact"> <!-- Update if your URL is different -->
+                        <input type="text" name="_honey" style="display:none"> <!-- Spam Protection -->
+
                         <div class="input-group">
-                            <input type="text" id="name" required placeholder="Your Name">
+                            <input type="text" id="form-name" name="fullname" required placeholder="Your Name">
                         </div>
                         <div class="input-group">
-                            <input type="email" id="email" required placeholder="Your Email">
+                            <input type="email" id="form-email" name="email" required placeholder="Your Email">
                         </div>
                         <div class="input-group">
-                            <input type="text" id="subject" required placeholder="Subject">
+                            <input type="text" id="form-subject" name="subject" required placeholder="Subject">
                         </div>
                         <div class="input-group">
-                            <textarea id="message" rows="5" required placeholder="Your Message"></textarea>
+                            <textarea id="form-message" name="message" rows="5" required placeholder="Your Message"></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Send Message <i
+                        <div id="form-status" style="margin-bottom: 1rem; display: none; font-size: 0.9rem;"></div>
+                        <button type="submit" class="btn btn-primary" id="btn-submit-contact">Send Message <i
                                 class="fas fa-paper-plane"></i></button>
                     </form>
                 </div>
