@@ -496,36 +496,17 @@ window.removeLastPortfolioItem = function () {
     }
 };
 
-// Portfolio & General Image Upload Logic
-let currentImageTarget = null;
-const imageUploadInput = document.getElementById('portfolio-image-upload');
-
+// Image Link Logic
 window.triggerImageUpload = function(imgElement) {
-    currentImageTarget = imgElement;
-    if (imageUploadInput) imageUploadInput.click();
+    const currentSrc = imgElement.src;
+    const newLink = prompt("Enter the New Image URL (e.g., GDrive image link or any direct image URL):", currentSrc);
+    
+    if (newLink !== null && newLink.trim() !== "") {
+        imgElement.src = newLink;
+        markAsEdited();
+        alert("Picture updated successfully!");
+    }
 };
-
-if (imageUploadInput) {
-    imageUploadInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file || !currentImageTarget) return;
-
-        // Check file size (limit to 1.5MB for Base64 longevity)
-        if (file.size > 1.5 * 1024 * 1024) {
-            alert("Image is too large. Please select an image under 1.5MB.");
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            currentImageTarget.src = event.target.result;
-            // Clear input so same file can be selected again
-            imageUploadInput.value = '';
-            markAsEdited();
-        };
-        reader.readAsDataURL(file);
-    });
-}
 
 function toggleAdminImageOverlays(show) {
     const overlays = document.querySelectorAll('.admin-image-overlay');
