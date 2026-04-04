@@ -161,6 +161,11 @@ function renderReviews(reviews) {
     const adminBar = document.getElementById('admin-bar');
     const isAdmin = adminBar && adminBar.style.display === 'flex';
 
+    if (!reviews || reviews.length === 0) {
+        reviewsContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center; width: 100%; padding: 2rem;">No reviews yet.</p>';
+        return;
+    }
+
     reviews.forEach(review => {
         const card = document.createElement('div');
         card.className = 'review-card glass reveal active';
@@ -186,27 +191,47 @@ function renderReviews(reviews) {
 }
 
 // Global function for deleting reviews
-window.deleteReview = function(id) {
+window.deleteReview = async function(id) {
     if (!confirm("Are you sure you want to delete this review?")) return;
     
-    let reviews = JSON.parse(localStorage.getItem('employer_reviews')) || [];
-    reviews = reviews.filter(r => r.id !== id);
-    localStorage.setItem('employer_reviews', JSON.stringify(reviews));
-    renderReviews(reviews);
-    
-    // Sync deletion to Supabase
-    _supabase.from('resume_sections').upsert({
-        id: 'employer_reviews',
-        html_content: JSON.stringify(reviews)
-    }).then(({error}) => {
-        if (error) console.error('Error syncing deletion to Supabase:', error);
-    });
+    try {
+        // 1. Fetch latest from DB to ensure sync
+        const { data, error: fetchError } = await _supabase
+            .from('resume_sections')
+            .select('html_content')
+            .eq('id', 'employer_reviews')
+            .single();
+            
+        if (fetchError) throw fetchError;
+        
+        let reviews = JSON.parse(data.html_content) || [];
+        reviews = reviews.filter(r => r.id !== id);
+        
+        // 2. Save back to DB
+        const { error: upsertError } = await _supabase.from('resume_sections').upsert({
+            id: 'employer_reviews',
+            html_content: JSON.stringify(reviews)
+        });
+        
+        if (upsertError) throw upsertError;
+        
+        // 3. Update UI and LocalStorage
+        localStorage.setItem('employer_reviews', JSON.stringify(reviews));
+        renderReviews(reviews);
+        alert("Review deleted and synced to cloud.");
+    } catch (err) {
+        console.error('Deletion failed:', err);
+        alert("Failed to delete from database. Please check your connection.");
+    }
 };
 
 const reviewForm = document.getElementById('review-form');
 if (reviewForm) {
     reviewForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        const btnSubmit = reviewForm.querySelector('button[type="submit"]');
+        const originalBtnText = btnSubmit.innerHTML;
         
         const name = document.getElementById('review-name').value;
         const position = document.getElementById('review-position').value;
@@ -220,23 +245,47 @@ if (reviewForm) {
             date: new Date().toISOString()
         };
         
-        let reviews = JSON.parse(localStorage.getItem('employer_reviews')) || [];
-        reviews.push(newReview);
-        localStorage.setItem('employer_reviews', JSON.stringify(reviews));
-        
-        renderReviews(reviews);
-        reviewForm.reset();
-        
-        // Save reviews to Supabase
-        const { error } = await _supabase.from('resume_sections').upsert({
-            id: 'employer_reviews',
-            html_content: JSON.stringify(reviews)
-        });
-        
-        if (error) {
-            console.error('Error saving review to Supabase:', error);
-        } else {
-            alert("Thank you for your review!");
+        try {
+            // Visual Feedback
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = 'Saving to Database... <i class="fas fa-spinner fa-spin"></i>';
+
+            // 1. Fetch latest reviews from DB to avoid overwriting others' data
+            const { data, error: fetchError } = await _supabase
+                .from('resume_sections')
+                .select('html_content')
+                .eq('id', 'employer_reviews')
+                .single();
+
+            let reviews = [];
+            if (!fetchError && data) {
+                reviews = JSON.parse(data.html_content) || [];
+            } else if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 means row not found, which is fine
+                throw fetchError;
+            }
+            
+            // 2. Add new review
+            reviews.push(newReview);
+            
+            // 3. Save to Supabase
+            const { error: upsertError } = await _supabase.from('resume_sections').upsert({
+                id: 'employer_reviews',
+                html_content: JSON.stringify(reviews)
+            });
+            
+            if (upsertError) throw upsertError;
+            
+            // 4. Update UI and Local Cache
+            localStorage.setItem('employer_reviews', JSON.stringify(reviews));
+            renderReviews(reviews);
+            reviewForm.reset();
+            alert("Thank you! Your review is saved in our database.");
+        } catch (err) {
+            console.error('Submission failed:', err);
+            alert("Connection Error: Your review was NOT saved to the database. Please try again.");
+        } finally {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = originalBtnText;
         }
     });
 }
