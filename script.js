@@ -5,6 +5,11 @@ const navLinks = document.querySelector('.nav-links');
 const navLinksList = document.querySelectorAll('.nav-links a');
 const sections = document.querySelectorAll('section');
 
+// Supabase Configuration
+const supabaseUrl = 'https://wscrpoghwxrcgzzajzaw.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzY3Jwb2dod3hyY2d6emFqemF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNTI4NDAsImV4cCI6MjA5MDgyODg0MH0.x6Y5ICkNlPGCbvTvRIC0RX9m8HpXkabT6D1vldN4x_k';
+const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
 // 1. Navigation Background on Scroll
 window.addEventListener('scroll', () => {
     if (window.scrollY > 50) {
@@ -229,6 +234,15 @@ if (reviewForm) {
         renderReviews(reviews);
         reviewForm.reset();
         markAsEdited();
+        
+        // Save reviews to Supabase
+        _supabase.from('resume_sections').upsert({
+            id: 'employer_reviews',
+            html_content: JSON.stringify(reviews)
+        }).then(({error}) => {
+            if (error) console.error('Error saving review to Supabase:', error);
+        });
+        
         alert("Thank you for your review!");
     });
 }
@@ -284,24 +298,37 @@ function resetModals() {
     if (pinError) pinError.style.display = 'none';
 }
 
-// Check for saved content on load
-document.addEventListener('DOMContentLoaded', () => {
-    if (editableRegions) {
-        editableRegions.forEach(region => {
-            const savedContent = localStorage.getItem('resume_content_v2_' + region.id);
-            if (savedContent) {
-                region.innerHTML = savedContent;
+// Check for saved content on load from Supabase
+document.addEventListener('DOMContentLoaded', async () => {
+    // Load data from Supabase
+    const { data, error } = await _supabase.from('resume_sections').select('*');
+    
+    if (error) {
+        console.error('Error loading from Supabase:', error);
+    } else if (data) {
+        data.forEach(item => {
+            // Handle regular regions
+            const region = document.getElementById(item.id);
+            if (region && item.id.startsWith('editable-')) {
+                region.innerHTML = item.html_content;
+            }
+            
+            // Handle Resume Link
+            if (item.id === 'resume_link') {
+                const resumeLinkElement = document.getElementById('resume-download-link');
+                if (resumeLinkElement) {
+                    resumeLinkElement.href = item.html_content;
+                    localStorage.setItem('resume_link', item.html_content);
+                }
+            }
+            
+            // Handle Reviews
+            if (item.id === 'employer_reviews') {
+                const reviews = JSON.parse(item.html_content);
+                localStorage.setItem('employer_reviews', JSON.stringify(reviews));
+                renderReviews(reviews || []);
             }
         });
-    }
-
-    // Load Resume Link
-    const savedResumeLink = localStorage.getItem('resume_link');
-    if (savedResumeLink) {
-        const resumeLinkElement = document.getElementById('resume-download-link');
-        if (resumeLinkElement) {
-            resumeLinkElement.href = savedResumeLink;
-        }
     }
 
     // Load Reviews
@@ -363,12 +390,32 @@ if (adminTrigger) {
 
 // Save Content Logic
 if (btnSaveContent) {
-    btnSaveContent.addEventListener('click', () => {
+    btnSaveContent.addEventListener('click', async () => {
+        const sectionsToSave = [];
+        
         editableRegions.forEach(region => {
-            localStorage.setItem('resume_content_v2_' + region.id, region.innerHTML);
+            sectionsToSave.push({
+                id: region.id,
+                html_content: region.innerHTML
+            });
         });
-        markAsEdited();
-        alert('Changes successfully saved! They will persist even if you close the browser.');
+
+        // Add Resume Link to save payload
+        const currentLink = localStorage.getItem('resume_link') || "https://drive.google.com/file/d/1D_qBtZvgGN0AZkoV10E4_caC23HmxwSr/view?usp=sharing";
+        sectionsToSave.push({
+            id: 'resume_link',
+            html_content: currentLink
+        });
+
+        const { error } = await _supabase.from('resume_sections').upsert(sectionsToSave);
+        
+        if (error) {
+            console.error('Error saving to Supabase:', error);
+            alert('Failed to save to cloud database.');
+        } else {
+            markAsEdited();
+            alert('Changes successfully saved to database! They are now live for everyone.');
+        }
     });
 }
 
@@ -384,6 +431,13 @@ if (btnUpdateResumeLink) {
             if (resumeLinkElement) {
                 resumeLinkElement.href = newLink;
             }
+            
+            // Auto-save to Supabase
+            _supabase.from('resume_sections').upsert({
+                id: 'resume_link',
+                html_content: newLink
+            });
+
             markAsEdited();
             alert("Resume link updated successfully!");
         }
@@ -528,10 +582,15 @@ window.triggerImageUpload = function(imgElement) {
         imgElement.src = newLink;
         markAsEdited();
         
-        // Auto-save this specific region
+        // Auto-save this specific region to Supabase
         const parentRegion = imgElement.closest('.editable-region');
         if (parentRegion && parentRegion.id) {
-            localStorage.setItem('resume_content_v2_' + parentRegion.id, parentRegion.innerHTML);
+            _supabase.from('resume_sections').upsert({
+                id: parentRegion.id,
+                html_content: parentRegion.innerHTML
+            }).then(({error}) => {
+                if (error) console.error('Error syncing image to Supabase:', error);
+            });
         }
         
         alert("Picture updated successfully! (Note: Make sure your GDrive link is set to 'Anyone with the link can view')");
