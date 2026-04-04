@@ -107,41 +107,29 @@ revealElements.forEach(el => {
     revealObserver.observe(el);
 });
 
-// 5. Typewriter Effect Logic (Optional Enhancement)
+// 5. Typewriter Effect Logic
 const typeWriterElement = document.querySelector('.typewriter');
 if (typeWriterElement) {
-    const roles = ['IT Professional', 'Technical Support Specialist', 'Data Manager', 'IT Encoder'];
-    let roleIndex = 0;
+    const text = typeWriterElement.textContent.trim();
+    typeWriterElement.textContent = '';
     let charIndex = 0;
-    let isDeleting = false;
-    let typingSpeed = 100;
+    let typingSpeed = 150;
 
     function type() {
-        const currentRole = roles[roleIndex];
-
-        if (isDeleting) {
-            typeWriterElement.textContent = currentRole.substring(0, charIndex - 1);
-            charIndex--;
-            typingSpeed = 50; // Delete faster
-        } else {
-            typeWriterElement.textContent = currentRole.substring(0, charIndex + 1);
+        if (charIndex < text.length) {
+            typeWriterElement.textContent += text.charAt(charIndex);
             charIndex++;
-            typingSpeed = 150;
+            setTimeout(type, typingSpeed);
+        } else {
+            // Once finished, remove the blinking cursor border
+            setTimeout(() => {
+                typeWriterElement.style.borderRight = 'none';
+                typeWriterElement.style.animation = 'none';
+            }, 1000);
         }
-
-        if (!isDeleting && charIndex === currentRole.length) {
-            isDeleting = true;
-            typingSpeed = 2000; // Pause at end
-        } else if (isDeleting && charIndex === 0) {
-            isDeleting = false;
-            roleIndex = (roleIndex + 1) % roles.length;
-            typingSpeed = 500; // Pause before typing new
-        }
-
-        setTimeout(type, typingSpeed);
     }
 
-    // Start typing effect
+    // Start typing effect after a short delay
     setTimeout(type, 1000);
 }
 
@@ -337,8 +325,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Reset Visibility
     updateResetButtonVisibility();
     
-    // Fix: Ensure overlays are hidden on load
+    // Fix: Ensure overlays and controls are hidden on load
     toggleAdminImageOverlays(false);
+    toggleAdminControls(false);
 });
 
 // --- Reset Functionality ---
