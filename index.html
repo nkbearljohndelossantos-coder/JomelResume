@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Resume | Jomel B. Darantinaw">
+    <title>Resume | Jomel B. Darantinaw</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Space+Grotesk:wght@500;700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Admin Bar -->
+    <div id="admin-bar" class="admin-bar" style="display: none;">
+        <span><i class="fas fa-edit"></i> Edit Mode Active</span>
+        <div class="admin-actions">
+            <button id="btn-save-content" class="btn btn-primary btn-sm">Save Changes</button>
+            <button id="btn-update-resume-link" class="btn btn-secondary btn-sm"><i class="fas fa-link"></i> Resume Link</button>
+            <button id="btn-print-pdf" class="btn btn-secondary btn-sm"><i class="fas fa-file-pdf"></i> Print/Save PDF</button>
+            <button id="btn-reset" class="btn btn-secondary btn-sm" style="display: none; border-color: #f59e0b; color: #f59e0b;"><i class="fas fa-undo"></i> Reset</button>
+            <button id="btn-change-pin-modal" class="btn btn-secondary btn-sm">Change PIN</button>
+            <button id="btn-logout" class="btn btn-secondary btn-sm"
+                style="border-color: #ef4444; color: #ef4444;">Logout</button>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content glass">
+            <span class="close-modal">&times;</span>
+            <h3 style="margin-bottom: 1.5rem; text-align: center;"><i class="fas fa-lock accent"></i> Enter Admin PIN
+            </h3>
+            <input type="password" id="pin-input" class="modal-input" placeholder="Enter PIN (Default: 1914)">
+            <p id="login-error" style="color: #ef4444; font-size: 0.9rem; margin-top: 0.5rem; display: none;">Incorrect
+                PIN.</p>
+            <button id="btn-login" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Login</button>
+        </div>
+    </div>
+
+    <div id="change-pin-modal" class="modal">
+        <div class="modal-content glass">
+            <span class="close-modal">&times;</span>
+            <h3 style="margin-bottom: 1.5rem; text-align: center;"><i class="fas fa-key accent"></i> Change PIN</h3>
+            <input type="password" id="old-pin-input" class="modal-input" placeholder="Current PIN"
+                style="margin-bottom: 1rem;">
+            <input type="password" id="new-pin-input" class="modal-input" placeholder="New PIN"
+                style="margin-bottom: 1rem;">
+            <p id="pin-error" style="color: #ef4444; font-size: 0.9rem; display: none;"></p>
+            <button id="btn-save-pin" class="btn btn-primary" style="width: 100%;">Save New PIN</button>
+        </div>
+    </div>
+
+    <div class="blob-bg"></div>
+    <div class="blob-bg blob-2"></div>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#home" class="logo">Jomel<span class="accent">B.</span></a>
+            <ul class="nav-links">
+                <li><a href="#home" class="active">Home</a></li>
+                <li><a href="#about">Profile</a></li>
+                <li><a href="#skills">Skills</a></li>
+                <li><a href="#experience">Experience</a></li>
+                <li><a href="#education">Education</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="hamburger">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Home Section -->
+        <section id="home" class="hero">
+            <div class="container hero-container">
+                <div class="hero-content reveal">
+                    <p class="subtitle">Welcome to my resume</p>
+                    <div id="editable-hero" class="editable-region">
+                        <h1><span class="accent glow">JOMEL B.</span><br>DARANTINAW</h1>
+                        <h2 class="typewriter">Maintenance & Construction Professional</h2>
+                        <p class="description">To obtain a position that will enable me to use my strong communication skill and ability to work well with people. With extensive experience in masonry, carpentry, and maintenance.</p>
+                    </div>
+                    <div class="hero-cta">
+                        <a id="resume-download-link" href="https://drive.google.com/file/d/1D_qBtZvgGN0AZkoV10E4_caC23HmxwSr/view?usp=sharing"
+                            target="_blank" rel="noopener noreferrer" class="btn btn-primary">View / Download Resume
+                            &nbsp;<i class="fas fa-external-link-alt"></i></a>
+                        <a href="#experience" class="btn btn-secondary">My Experience</a>
+                        <a href="#contact" class="btn btn-secondary"
+                            style="border-width: 0; padding-left: 0.5rem; text-decoration: underline;">Contact Me</a>
+                    </div>
+                </div>
+                <div class="hero-image reveal-right">
+                    <div id="editable-profile-pic" class="image-wrapper editable-region">
+                        <div class="admin-image-overlay">
+                            <button class="btn btn-primary btn-sm" onclick="triggerImageUpload(this.parentElement.nextElementSibling)"><i class="fas fa-camera"></i> Change Photo</button>
+                        </div>
+                        <img src="assets/profile_pic.png" alt="Profile Picture">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About / Profile Section -->
+        <section id="about" class="about" style="padding-top: 50px;">
+            <div class="container">
+                <h2 class="section-title reveal">My <span class="accent">Profile</span></h2>
+                <div class="about-content">
+                    <div class="about-text reveal-left glass" style="padding: 3rem; text-align: left;">
+                        <div id="editable-about" class="editable-region">
+                            <p style="text-align: left; font-size: 1.1rem;">To obtain a position that will enable me to use my strong communication skill and ability to work well with people. With extensive experience in construction, masonry, carpentry, checking, and equipment maintenance across various industries.</p>
+
+                            <div
+                                style="margin-top: 2rem; border-top: 1px solid var(--glass-border); padding-top: 2rem;">
+                                <h3 style="color: var(--accent-color); margin-bottom: 1rem;"><i
+                                        class="fas fa-language"></i>
+                                    Languages</h3>
+                                <div class="admin-controls" style="display: none; margin-bottom: 1rem;">
+                                    <button class="btn btn-secondary btn-sm" onclick="addLanguageItem()"><i
+                                            class="fas fa-plus"></i> Add Language</button>
+                                    <button class="btn btn-secondary btn-sm"
+                                        style="color: #ef4444; border-color: #ef4444;"
+                                        onclick="removeLastLanguageItem()"><i class="fas fa-trash"></i> Remove
+                                        Last</button>
+                                </div>
+                                <ul id="editable-languages" style="list-style-type: none; display: flex; gap: 2rem;">
+                                    <li><i class="fas fa-check text-secondary" style="color: var(--accent-color);"></i>
+                                        English (Basic)</li>
+                                    <li><i class="fas fa-check text-secondary" style="color: var(--accent-color);"></i>
+                                        Tagalog</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section id="skills" class="skills" style="padding-top: 50px;">
+            <div class="container">
+                <h2 class="section-title reveal">Core <span class="accent">Skills</span></h2>
+                <div class="admin-controls" style="display: none; text-align: center; margin-bottom: 2rem;">
+                    <button class="btn btn-secondary btn-sm" onclick="addSkillCategory()"><i class="fas fa-plus"></i>
+                        Add Skill Category</button>
+                    <button class="btn btn-secondary btn-sm" style="color: #ef4444; border-color: #ef4444;"
+                        onclick="removeLastSkillCategory()"><i class="fas fa-trash"></i> Remove Last</button>
+                    <button class="btn btn-secondary btn-sm" onclick="addSkillItem()"><i class="fas fa-plus"></i> Add
+                        Bullet Point</button>
+                    <button class="btn btn-secondary btn-sm" style="color: #ef4444; border-color: #ef4444;"
+                        onclick="removeLastSkillItem()"><i class="fas fa-trash"></i> Remove Bullet Point</button>
+                </div>
+                <div id="editable-skills" class="skills-grid reveal editable-region"
+                    style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                    <div class="skill-card glass" style="text-align: left; padding: 2rem;">
+                        <ul style="list-style: none; line-height: 2.2; color: var(--text-primary);">
+                            <li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> Masonry (Plastering, Cementing, Finishing)</li>
+                            <li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> Tile Setting and Installation</li>
+                            <li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> Basic Carpentry Works</li>
+                            <li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> Maintenance and Repair of Equipment</li>
+                            <li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> Construction and Site Work Experience</li>
+                            <li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> Quality Checking and Inspection</li>
+                            <li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> Machine and Workplace Maintenance</li>
+                        </ul>
+                    </div>
+                    <div class="skill-card glass" style="text-align: left; padding: 2rem;">
+                        <ul style="list-style: none; line-height: 2.2; color: var(--text-primary);">
+                            <li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> Knowledge in Safety Procedures</li>
+                            <li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> Physically Fit and Hardworking</li>
+                            <li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> Can Work Under Pressure</li>
+                            <li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> Fast Learner and Adaptable</li>
+                            <li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> Team Player and Responsible</li>
+                            <li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> Attention to Detail</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experience Timeline -->
+        <section id="experience" class="experience" style="padding-top: 50px;">
+            <div class="container">
+                <h2 class="section-title reveal">Work <span class="accent">Experience</span></h2>
+
+                <div class="admin-controls" style="display: none; text-align: center; margin-bottom: 2rem;">
+                    <button class="btn btn-secondary btn-sm" onclick="addExperienceItem()"><i class="fas fa-plus"></i>
+                        Add Experience</button>
+                    <button class="btn btn-secondary btn-sm" style="color: #ef4444; border-color: #ef4444;"
+                        onclick="removeLastExperienceItem()"><i class="fas fa-trash"></i> Remove Last</button>
+                </div>
+
+                <div id="editable-experience" class="timeline reveal editable-region">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content glass">
+                            <h3>Sabellano Meat & Poultry Processing Plant</h3>
+                            <span class="timeline-date">2022 - Present | Checker / Maintenance</span>
+                            <ul
+                                style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
+                                <li style="margin-bottom: 0.5rem;">Checked product quality and quantity</li>
+                                <li style="margin-bottom: 0.5rem;">Performed maintenance of equipment</li>
+                                <li>Ensured cleanliness and compliance with safety standards</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content glass">
+                            <h3>RG Pangilinan Architects</h3>
+                            <span class="timeline-date">2018 - 2022 | Tile Setter / Mason / Carpenter</span>
+                            <ul
+                                style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
+                                <li style="margin-bottom: 0.5rem;">Installed tiles and performed finishing works</li>
+                                <li style="margin-bottom: 0.5rem;">Handled carpentry and masonry tasks</li>
+                                <li>Ensured accuracy and quality of installations</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content glass">
+                            <h3>Metro Star</h3>
+                            <span class="timeline-date">2016 - 2017 | Steelman</span>
+                            <ul
+                                style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
+                                <li style="margin-bottom: 0.5rem;">Executed masonry and finishing tasks</li>
+                                <li style="margin-bottom: 0.5rem;">Worked with construction team on-site</li>
+                                <li>Maintained tools and equipment</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content glass">
+                            <h3>MDC Altaraza</h3>
+                            <span class="timeline-date">2015 - 2016 | Steelman</span>
+                            <ul
+                                style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
+                                <li style="margin-bottom: 0.5rem;">Performed masonry work (cementing, plastering)</li>
+                                <li style="margin-bottom: 0.5rem;">Prepared construction materials</li>
+                                <li>Ensured quality of finished work</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content glass">
+                            <h3>Grey Hound Company</h3>
+                            <span class="timeline-date">2013 - 2014 | Steelman</span>
+                            <ul
+                                style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
+                                <li style="margin-bottom: 0.5rem;">Handled steel materials and fabrication tasks</li>
+                                <li style="margin-bottom: 0.5rem;">Assisted in construction projects</li>
+                                <li>Followed safety standards</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content glass">
+                            <h3>Oishi Company</h3>
+                            <span class="timeline-date">2012 - 2013 | Maintenance</span>
+                            <ul
+                                style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
+                                <li style="margin-bottom: 0.5rem;">Performed machine and facility maintenance</li>
+                                <li style="margin-bottom: 0.5rem;">Ensured cleanliness and safety of equipment</li>
+                                <li>Assisted in repairs and troubleshooting</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content glass">
+                            <h3>Sealine</h3>
+                            <span class="timeline-date">2011 - 2012 | Helper</span>
+                            <ul
+                                style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
+                                <li style="margin-bottom: 0.5rem;">Assisted in production and operations</li>
+                                <li style="margin-bottom: 0.5rem;">Maintained cleanliness of work area</li>
+                                <li>Followed safety procedures</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content glass">
+                            <h3>Tinio Elementary School</h3>
+                            <span class="timeline-date">2008 - 2010 | Helper</span>
+                            <ul
+                                style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem; line-height: 1.6;">
+                                <li style="margin-bottom: 0.5rem;">Assisted in maintenance and cleaning of school facilities</li>
+                                <li style="margin-bottom: 0.5rem;">Supported skilled workers in daily tasks</li>
+                                <li>Handled basic tools and materials</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Education Section -->
+        <section id="education" class="projects">
+            <div class="container">
+                <h2 class="section-title reveal"><span class="accent">Education</span></h2>
+
+                <div class="admin-controls"
+                    style="display: none; text-align: center; margin-bottom: 2rem; width: 100%;">
+                    <button class="btn btn-secondary btn-sm" onclick="addEducationItem()"><i class="fas fa-plus"></i>
+                        Add Education</button>
+                    <button class="btn btn-secondary btn-sm" style="color: #ef4444; border-color: #ef4444;"
+                        onclick="removeLastEducationItem()"><i class="fas fa-trash"></i> Remove Last</button>
+                </div>
+
+                <div id="editable-education-container" class="projects-grid editable-region"
+                    style="display: flex; justify-content: center; flex-wrap: wrap; gap: 2rem;">
+
+                    <div id="editable-education-item" class="project-card glass reveal"
+                        style="padding: 3rem; display: flex; flex-direction: column; justify-content: center; width: 100%; max-width: 600px; text-align: center;">
+                        <h3 style="margin-bottom: 1.5rem; font-size: 1.8rem;">Don Honorio Ventura Technological State University</h3>
+                        <h4 class="accent" style="font-size: 1.3rem; margin-bottom: 0.5rem;">B.S. Information Technology (Undergraduate)</h4>
+                        <p style="color: var(--text-secondary); font-size: 1.1rem;">2005 - 2006</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reviews Section -->
+        <section id="reviews" class="reviews" style="padding-top: 50px;">
+            <div class="container">
+                <h2 class="section-title reveal">Employer <span class="accent">Reviews</span></h2>
+                
+                <!-- Review List -->
+                <div id="reviews-container" class="reviews-grid reveal">
+                    <!-- Reviews will be loaded here via JS -->
+                    <div class="review-card glass">
+                        <p class="review-text">"Earl is a highly dedicated IT professional. His technical skills and problem-solving abilities were a great asset to our team."</p>
+                        <div class="review-author">
+                            <i class="fas fa-user-tie accent"></i>
+                            <div>
+                                <h4>Juan Dela Cruz</h4>
+                                <p>Manager, NKB Manufacturing</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leave a Review Form -->
+                <div class="leave-review-container reveal glass" style="margin-top: 4rem; padding: 3rem;">
+                    <h3 style="margin-bottom: 2rem; text-align: center;">Leave a Review</h3>
+                    <form id="review-form" class="contact-form" style="background: transparent; padding: 0; box-shadow: none;">
+                        <div class="input-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                            <div class="input-group">
+                                <input type="text" id="review-name" required placeholder="Your Name">
+                            </div>
+                            <div class="input-group">
+                                <input type="text" id="review-position" required placeholder="Your Position / Company">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <textarea id="review-content" rows="4" required placeholder="Your Review / Comments"></textarea>
+                        </div>
+                        <div style="text-align: center;">
+                            <button type="submit" class="btn btn-primary">Submit Review <i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="contact">
+            <div class="container">
+                <h2 class="section-title reveal">Get in <span class="accent">Touch</span></h2>
+                <div class="contact-container reveal">
+                    <div id="editable-contact" class="contact-info editable-region">
+                        <h3>Contact Information</h3>
+                        <p>Feel free to reach out to me for technical support or IT roles.</p>
+                        <div class="info-items">
+                            <div class="info-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>jomelbdarantinaw@gmail.com</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-phone"></i>
+                                <span>0946-684-0371 / 0907-039-4419</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span style="line-height: 1.4;">San Roque Dau 1st,<br>Lubao, Pampanga</span>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--glass-border);">
+                            <h4 style="margin-bottom: 1.5rem; font-size: 1.2rem;">References</h4>
+                            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1.2rem;">
+                                <strong>Hon. Michael B. Capuno</strong><br>Brgy. Captain<br>Maquiapo, Guagua, Pampanga
+                            </p>
+                        </div>
+                    </div>
+                    <form class="contact-form glass">
+                        <div class="input-group">
+                            <input type="text" id="name" required placeholder="Your Name">
+                        </div>
+                        <div class="input-group">
+                            <input type="email" id="email" required placeholder="Your Email">
+                        </div>
+                        <div class="input-group">
+                            <input type="text" id="subject" required placeholder="Subject">
+                        </div>
+                        <div class="input-group">
+                            <textarea id="message" rows="5" required placeholder="Your Message"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Send Message <i
+                                class="fas fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Jomel B. Darantinaw. All Rights Reserved. &nbsp; <span id="admin-trigger"
+                    style="color: var(--text-secondary); cursor: pointer; opacity: 0.5; font-size: 0.8rem;"><i
+                        class="fas fa-lock"></i> Admin</span></p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
