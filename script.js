@@ -107,67 +107,63 @@ revealElements.forEach(el => {
     revealObserver.observe(el);
 });
 
-// 5. Typewriter Effect Logic
-const typeWriterElement = document.querySelector('.typewriter');
-if (typeWriterElement) {
-    const text = typeWriterElement.textContent.trim();
-    typeWriterElement.textContent = '';
-    let charIndex = 0;
-    let typingSpeed = 150;
+// 5. Typewriter Effect Logic for the NAME
+function initRoleTypewriter() {
+    const roleElement = document.getElementById('static-role');
+    if (roleElement) {
+        const text = roleElement.textContent.trim() || "Multi-Skilled Technical Specialist";
+        roleElement.textContent = '';
+        roleElement.style.display = 'inline-block';
+        roleElement.style.borderRight = 'none'; // Explicitly remove any line
+        
+        let charIndex = 0;
+        let typingSpeed = 100;
 
-    function type() {
-        if (charIndex < text.length) {
-            typeWriterElement.textContent += text.charAt(charIndex);
-            charIndex++;
-            setTimeout(type, typingSpeed);
-        } else {
-            // Once finished, remove the blinking cursor border
-            setTimeout(() => {
-                typeWriterElement.style.borderRight = 'none';
-                typeWriterElement.style.animation = 'none';
-            }, 1000);
+        function type() {
+            if (charIndex < text.length) {
+                roleElement.textContent += text.charAt(charIndex);
+                charIndex++;
+                setTimeout(type, typingSpeed);
+            } else {
+                // Wait 3 seconds then RESTART the animation for "tuloy-tuloy" effect
+                setTimeout(() => {
+                    roleElement.textContent = '';
+                    charIndex = 0;
+                    type();
+                }, 3000);
+            }
         }
+        type();
     }
+}
 
-    // Start typing effect after a short delay
-    setTimeout(type, 1000);
+function initNameTypewriter() {
+    const typeWriterElement = document.getElementById('typewriter-name');
+    if (typeWriterElement) {
+        // Just ensure it's visible and correctly formatted without typing
+        typeWriterElement.classList.remove('typewriter');
+        typeWriterElement.style.borderRight = 'none';
+        typeWriterElement.style.animation = 'none';
+        
+        // Start Role Animation INSTANTLY (0 delay)
+        initRoleTypewriter();
+    }
 }
 
 // 5.5 Reviews Logic
-const reviewForm = document.getElementById('review-form');
 const reviewsContainer = document.getElementById('reviews-container');
-
-function loadReviews() {
-    if (!reviewsContainer) return;
-    
-    // Default initial reviews if none in storage
-    let reviews = JSON.parse(localStorage.getItem('employer_reviews'));
-    
-    if (!reviews) {
-        reviews = [
-            {
-                id: Date.now(),
-                name: "Juan Dela Cruz",
-                position: "Manager, NKB Manufacturing",
-                content: "Earl is a highly dedicated IT professional. His technical skills and problem-solving abilities were a great asset to our team.",
-                date: new Date().toISOString()
-            }
-        ];
-        localStorage.setItem('employer_reviews', JSON.stringify(reviews));
-    }
-
-    renderReviews(reviews);
-}
 
 function renderReviews(reviews) {
     if (!reviewsContainer) return;
     reviewsContainer.innerHTML = '';
     
+    // Check if we are currently in admin mode
+    const adminBar = document.getElementById('admin-bar');
     const isAdmin = adminBar && adminBar.style.display === 'flex';
 
     reviews.forEach(review => {
         const card = document.createElement('div');
-        card.className = 'review-card glass reveal active'; // Adding active to show immediately for now
+        card.className = 'review-card glass reveal active';
         
         let deleteBtn = '';
         if (isAdmin) {
@@ -189,6 +185,7 @@ function renderReviews(reviews) {
     });
 }
 
+// Global function for deleting reviews
 window.deleteReview = function(id) {
     if (!confirm("Are you sure you want to delete this review?")) return;
     
@@ -196,11 +193,19 @@ window.deleteReview = function(id) {
     reviews = reviews.filter(r => r.id !== id);
     localStorage.setItem('employer_reviews', JSON.stringify(reviews));
     renderReviews(reviews);
-    markAsEdited();
+    
+    // Sync deletion to Supabase
+    _supabase.from('resume_sections').upsert({
+        id: 'employer_reviews',
+        html_content: JSON.stringify(reviews)
+    }).then(({error}) => {
+        if (error) console.error('Error syncing deletion to Supabase:', error);
+    });
 };
 
+const reviewForm = document.getElementById('review-form');
 if (reviewForm) {
-    reviewForm.addEventListener('submit', (e) => {
+    reviewForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const name = document.getElementById('review-name').value;
@@ -221,17 +226,18 @@ if (reviewForm) {
         
         renderReviews(reviews);
         reviewForm.reset();
-        markAsEdited();
         
         // Save reviews to Supabase
-        _supabase.from('resume_sections').upsert({
+        const { error } = await _supabase.from('resume_sections').upsert({
             id: 'employer_reviews',
             html_content: JSON.stringify(reviews)
-        }).then(({error}) => {
-            if (error) console.error('Error saving review to Supabase:', error);
         });
         
-        alert("Thank you for your review!");
+        if (error) {
+            console.error('Error saving review to Supabase:', error);
+        } else {
+            alert("Thank you for your review!");
+        }
     });
 }
 
@@ -239,7 +245,7 @@ if (reviewForm) {
 const adminTrigger = document.getElementById('admin-trigger');
 const loginModal = document.getElementById('login-modal');
 const changePinModal = document.getElementById('change-pin-modal');
-const adminBar = document.getElementById('admin-bar');
+const adminBarElement = document.getElementById('admin-bar');
 const editableRegions = document.querySelectorAll('.editable-region');
 
 // Admin Buttons
@@ -255,7 +261,6 @@ const btnSavePin = document.getElementById('btn-save-pin');
 // Inputs
 const pinInput = document.getElementById('pin-input');
 
-// Fix: Support Enter key for PIN input
 if (pinInput) {
     pinInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
@@ -286,83 +291,92 @@ function resetModals() {
     if (pinError) pinError.style.display = 'none';
 }
 
-// Check for saved content on load from Supabase
+// 7. Load Data from Supabase on Startup
 document.addEventListener('DOMContentLoaded', async () => {
-    // Load data from Supabase
-    const { data, error } = await _supabase.from('resume_sections').select('*');
-    
-    if (error) {
-        console.error('Error loading from Supabase:', error);
-    } else if (data) {
-        data.forEach(item => {
-            // Handle regular regions
-            const region = document.getElementById(item.id);
-            if (region && item.id.startsWith('editable-')) {
-                region.innerHTML = item.html_content;
-            }
-            
-            // Handle Resume Link
-            if (item.id === 'resume_link') {
-                const resumeLinkElement = document.getElementById('resume-download-link');
-                if (resumeLinkElement) {
-                    resumeLinkElement.href = item.html_content;
-                    localStorage.setItem('resume_link', item.html_content);
+    // Initial UI state
+    toggleAdminControls(false);
+    toggleAdminImageOverlays(false);
+
+    try {
+        const { data, error } = await _supabase.from('resume_sections').select('*');
+        if (error) throw error;
+
+        if (data) {
+            data.forEach(item => {
+                // Section Content
+                const region = document.getElementById(item.id);
+                if (region && item.id.startsWith('editable-')) {
+                    let cleanedContent = item.html_content;
+
+                    // SMART CLEANUP: If this is the about section, strip out any legacy nested languages
+                    if (item.id === 'editable-about') {
+                        const temp = document.createElement('div');
+                        temp.innerHTML = cleanedContent;
+                        const nestedLanguages = temp.querySelectorAll('h3, .admin-controls, #editable-languages, ul');
+                        nestedLanguages.forEach(el => {
+                            if (el.textContent.includes('Languages') || el.id === 'editable-languages' || el.tagName === 'UL') {
+                                el.remove();
+                            }
+                        });
+                        cleanedContent = temp.innerHTML;
+                    }
+
+                    // SMART CLEANUP: If this is the hero section, strip out any duplicate legacy H1 name
+                    if (item.id === 'editable-hero') {
+                        const temp = document.createElement('div');
+                        temp.innerHTML = cleanedContent;
+                        const legacyH1 = temp.querySelector('h1');
+                        if (legacyH1) legacyH1.remove(); // Remove the non-animated name from the DB
+                        cleanedContent = temp.innerHTML;
+                    }
+
+                    region.innerHTML = cleanedContent;
                 }
-            }
-            
-            // Handle Reviews
-            if (item.id === 'employer_reviews') {
-                const reviews = JSON.parse(item.html_content);
-                localStorage.setItem('employer_reviews', JSON.stringify(reviews));
-                renderReviews(reviews || []);
-            }
-        });
+                
+                // Resume Download Link
+                if (item.id === 'resume_link') {
+                    const resumeLinkElement = document.getElementById('resume-download-link');
+                    if (resumeLinkElement) {
+                        resumeLinkElement.href = item.html_content;
+                        localStorage.setItem('resume_link', item.html_content);
+                    }
+                }
+                
+                // Employer Reviews
+                if (item.id === 'employer_reviews') {
+                    try {
+                        const reviews = JSON.parse(item.html_content);
+                        localStorage.setItem('employer_reviews', JSON.stringify(reviews));
+                        renderReviews(reviews || []);
+                    } catch (e) {
+                        console.error('Error parsing reviews JSON:', e);
+                    }
+                }
+            });
+        }
+    } catch (err) {
+        console.error('Initial load failed:', err);
+        // Fallback to local storage if Supabase fails
+        const localReviews = JSON.parse(localStorage.getItem('employer_reviews'));
+        if (localReviews) renderReviews(localReviews);
     }
 
-    // Load Reviews
-    loadReviews();
-
-    // Reset Visibility
+    // Start Name Typewriter AFTER content is loaded
+    setTimeout(initNameTypewriter, 10); // Small 10ms delay for DOM consistency
     updateResetButtonVisibility();
-    
-    // Fix: Ensure overlays and controls are hidden on load
-    toggleAdminImageOverlays(false);
-    toggleAdminControls(false);
 });
 
-// --- Reset Functionality ---
+// --- Admin Helper Functions ---
 function updateResetButtonVisibility() {
-    if (!btnReset) return;
-    
-    // Always show if we're in admin mode
+    const adminBar = document.getElementById('admin-bar');
     const isAdmin = adminBar && adminBar.style.display === 'flex';
-    if (isAdmin) {
-        btnReset.style.display = 'inline-block';
-    } else {
-        btnReset.style.display = 'none';
-    }
-}
-
-// markAsEdited is no longer used for 5-minute window
-function markAsEdited() {
-    // No timer logic, but button is always visible in Admin mode anyway.
-    updateResetButtonVisibility();
+    if (btnReset) btnReset.style.display = isAdmin ? 'inline-block' : 'none';
 }
 
 if (btnReset) {
     btnReset.addEventListener('click', () => {
-        if (confirm("Are you sure you want to RESET all changes to the original template? This cannot be undone.")) {
-            // Clear all resume-related localStorage
-            const keysToRemove = [];
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key && (key.startsWith('resume_content_') || 
-                    key === 'resume_download_link' || 
-                    key === 'employer_reviews')) {
-                    keysToRemove.push(key);
-                }
-            }
-            keysToRemove.forEach(k => localStorage.removeItem(k));
+        if (confirm("Are you sure you want to RESET all changes? This will clear local cache and reload.")) {
+            localStorage.clear();
             window.location.reload();
         }
     });
@@ -372,16 +386,14 @@ if (btnReset) {
 if (adminTrigger) {
     adminTrigger.addEventListener('click', () => {
         loginModal.style.display = 'flex';
+        if (pinInput) pinInput.focus();
     });
 }
-
-// Override removed from here as it's defined below.
 
 // Save Content Logic
 if (btnSaveContent) {
     btnSaveContent.addEventListener('click', async () => {
         const sectionsToSave = [];
-        
         editableRegions.forEach(region => {
             sectionsToSave.push({
                 id: region.id,
@@ -389,46 +401,40 @@ if (btnSaveContent) {
             });
         });
 
-        // Add Resume Link to save payload
-        const currentLink = localStorage.getItem('resume_link') || "https://drive.google.com/file/d/1D_qBtZvgGN0AZkoV10E4_caC23HmxwSr/view?usp=sharing";
-        sectionsToSave.push({
-            id: 'resume_link',
-            html_content: currentLink
-        });
+        // Current status alerts
+        btnSaveContent.textContent = "Saving...";
+        btnSaveContent.disabled = true;
 
         const { error } = await _supabase.from('resume_sections').upsert(sectionsToSave);
         
+        btnSaveContent.textContent = "Save Changes";
+        btnSaveContent.disabled = false;
+
         if (error) {
             console.error('Error saving to Supabase:', error);
             alert('Failed to save to cloud database.');
         } else {
-            markAsEdited();
-            alert('Changes successfully saved to database! They are now live for everyone.');
+            alert('Changes successfully saved! They are now live.');
         }
     });
 }
 
 // Update Resume Link Logic
 if (btnUpdateResumeLink) {
-    btnUpdateResumeLink.addEventListener('click', () => {
+    btnUpdateResumeLink.addEventListener('click', async () => {
         const currentLink = localStorage.getItem('resume_link') || "https://drive.google.com/file/d/1D_qBtZvgGN0AZkoV10E4_caC23HmxwSr/view?usp=sharing";
-        const newLink = prompt("Enter the new URL for your Resume (Google Drive, Dropbox, etc.):", currentLink);
+        const newLink = prompt("Enter the new URL for your Resume:", currentLink);
         
-        if (newLink !== null && newLink.trim() !== "") {
+        if (newLink && newLink.trim() !== "") {
             localStorage.setItem('resume_link', newLink);
-            const resumeLinkElement = document.getElementById('resume-download-link');
-            if (resumeLinkElement) {
-                resumeLinkElement.href = newLink;
-            }
+            const resumeLinkBtn = document.getElementById('resume-download-link');
+            if (resumeLinkBtn) resumeLinkBtn.href = newLink;
             
-            // Auto-save to Supabase
-            _supabase.from('resume_sections').upsert({
+            await _supabase.from('resume_sections').upsert({
                 id: 'resume_link',
                 html_content: newLink
             });
-
-            markAsEdited();
-            alert("Resume link updated successfully!");
+            alert("Resume link updated and synced!");
         }
     });
 }
@@ -436,14 +442,10 @@ if (btnUpdateResumeLink) {
 // Print To PDF Logic
 if (btnPrintPdf) {
     btnPrintPdf.addEventListener('click', () => {
-        // Hide admin bar for printing
         const adminBar = document.getElementById('admin-bar');
         const originalDisplay = adminBar.style.display;
         adminBar.style.display = 'none';
-        
         window.print();
-        
-        // Restore
         adminBar.style.display = originalDisplay;
     });
 }
@@ -455,326 +457,178 @@ if (btnChangePinModal) {
     });
 }
 
-// Save New PIN Logic
+// Change PIN Logic
 if (btnSavePin) {
     btnSavePin.addEventListener('click', () => {
         const currentPin = localStorage.getItem('resume_admin_pin') || '1914';
-
         if (oldPinInput.value !== currentPin) {
             pinError.style.display = 'block';
             pinError.textContent = 'Current PIN is incorrect.';
-            pinError.style.color = '#ef4444';
             return;
         }
-
-        if (newPinInput.value.length < 4) {
-            pinError.style.display = 'block';
-            pinError.textContent = 'New PIN must be at least 4 characters long.';
-            pinError.style.color = '#ef4444';
-            return;
-        }
-
-        // Success
         localStorage.setItem('resume_admin_pin', newPinInput.value);
         pinError.style.display = 'block';
-        pinError.textContent = 'PIN successfully changed!';
-        pinError.style.color = '#22c55e'; // Green
-
-        setTimeout(() => {
-            changePinModal.style.display = 'none';
-            resetModals();
-        }, 1500);
+        pinError.textContent = 'PIN Changed!';
+        pinError.style.color = '#22c55e';
+        setTimeout(() => { changePinModal.style.display = 'none'; resetModals(); }, 1500);
     });
 }
 
-// 7. Dynamic Addition/Removal of Elements
+// 7. Element Management
 const adminControls = document.querySelectorAll('.admin-controls');
-
 function toggleAdminControls(show) {
-    adminControls.forEach(control => {
-        control.style.display = show ? 'block' : 'none';
-    });
+    adminControls.forEach(control => control.style.display = show ? 'block' : 'none');
     toggleAdminImageOverlays(show);
 }
 
+function toggleAdminImageOverlays(show) {
+    document.querySelectorAll('.admin-image-overlay').forEach(overlay => {
+        if (show) overlay.classList.add('active');
+        else overlay.classList.remove('active');
+    });
+}
 
-
+// Dynamic Item Functions
 window.addPortfolioItem = function () {
     const container = document.getElementById('editable-portfolio');
-    if (!container) return;
     const items = container.querySelectorAll('.project-card');
     if (items.length === 0) return;
-
     const newItem = items[0].cloneNode(true);
-    
-    // Reset contents
-    const h3 = newItem.querySelector('h3');
-    if (h3) h3.textContent = "New Project Name";
-    
-    const pTag = newItem.querySelector('p');
-    if (pTag) pTag.textContent = "Description of the new project.";
-    
-    const tagsContainer = newItem.querySelector('.project-tags');
-    if (tagsContainer) {
-        tagsContainer.innerHTML = '<span>Tech 1</span><span>Tech 2</span>';
-    }
-
     container.appendChild(newItem);
-
     if (document.getElementById('admin-bar').style.display === 'flex') {
         newItem.setAttribute('contenteditable', 'true');
     }
-    markAsEdited();
 };
 
 window.removeLastPortfolioItem = function () {
     const container = document.getElementById('editable-portfolio');
-    if (!container) return;
     const items = container.querySelectorAll('.project-card');
-    if (items.length > 1) {
-        container.removeChild(items[items.length - 1]);
-        markAsEdited();
-    } else {
-        alert("Cannot remove the last project.");
-    }
+    if (items.length > 1) container.removeChild(items[items.length - 1]);
 };
-
-// Image Link Logic
-function convertGDriveLink(url) {
-    if (!url) return url;
-    
-    // Check if it's a Google Drive link
-    if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
-        // Pattern 1: /file/d/FILE_ID/...
-        let match = url.match(/\/file\/d\/([a-zA-Z0-9_\-]+)/);
-        if (match && match[1]) {
-            return `https://lh3.googleusercontent.com/d/${match[1]}`;
-        }
-        
-        // Pattern 2: ?id=FILE_ID
-        match = url.match(/[?&]id=([a-zA-Z0-9_\-]+)/);
-        if (match && match[1]) {
-            return `https://lh3.googleusercontent.com/d/${match[1]}`;
-        }
-    }
-    return url;
-}
-
-window.triggerImageUpload = function(imgElement) {
-    const currentSrc = imgElement.src;
-    let newLink = prompt("Enter the New Image URL (e.g., GDrive image share link or any direct image URL):", currentSrc);
-    
-    if (newLink !== null && newLink.trim() !== "") {
-        // Automatically convert GDrive viewer links to direct image links
-        newLink = convertGDriveLink(newLink.trim());
-        
-        imgElement.src = newLink;
-        markAsEdited();
-        
-        // Auto-save this specific region to Supabase
-        const parentRegion = imgElement.closest('.editable-region');
-        if (parentRegion && parentRegion.id) {
-            _supabase.from('resume_sections').upsert({
-                id: parentRegion.id,
-                html_content: parentRegion.innerHTML
-            }).then(({error}) => {
-                if (error) console.error('Error syncing image to Supabase:', error);
-            });
-        }
-        
-        alert("Picture updated successfully! (Note: Make sure your GDrive link is set to 'Anyone with the link can view')");
-    }
-};
-
-function toggleAdminImageOverlays(show) {
-    const overlays = document.querySelectorAll('.admin-image-overlay');
-    overlays.forEach(overlay => {
-        if (show) {
-            overlay.classList.add('active');
-        } else {
-            overlay.classList.remove('active');
-        }
-    });
-}
 
 window.addExperienceItem = function () {
     const timeline = document.getElementById('editable-experience');
     const items = timeline.querySelectorAll('.timeline-item');
     if (items.length === 0) return;
-
-    // Clone the first item so we don't copy over heavily modified text from the last item
     const newItem = items[0].cloneNode(true);
-
-    // Clear out the contents for the new item
-    const h3 = newItem.querySelector('h3');
-    if (h3) h3.textContent = "New Position / Role";
-
-    const span = newItem.querySelector('.timeline-date');
-    if (span) span.textContent = "Year | Company Name, Location";
-
-    const ul = newItem.querySelector('ul');
-    if (ul) {
-        ul.innerHTML = '<li>Enter your responsibilities here.</li>';
-    }
-
-    // Insert at the end
     timeline.appendChild(newItem);
-
-    // Ensure the new item is editable if we're in edit mode
     if (document.getElementById('admin-bar').style.display === 'flex') {
         newItem.setAttribute('contenteditable', 'true');
     }
-    markAsEdited();
 };
 
 window.removeLastExperienceItem = function () {
     const timeline = document.getElementById('editable-experience');
     const items = timeline.querySelectorAll('.timeline-item');
-    if (items.length > 1) {
-        timeline.removeChild(items[items.length - 1]);
-        markAsEdited();
-    } else {
-        alert("Cannot remove the last item. You can edit it instead.");
-    }
+    if (items.length > 1) timeline.removeChild(items[items.length - 1]);
 };
 
 window.addEducationItem = function () {
     const container = document.getElementById('editable-education-container');
     const items = container.querySelectorAll('.project-card');
     if (items.length === 0) return;
-
     const newItem = items[0].cloneNode(true);
-    const h3 = newItem.querySelector('h3');
-    if (h3) h3.textContent = "School Name / Institution";
-
-    const h4 = newItem.querySelector('h4');
-    if (h4) h4.textContent = "Degree / Course Name";
-
-    const pTag = newItem.querySelector('p');
-    if (pTag) pTag.textContent = "Year - Year";
-
     container.appendChild(newItem);
-
     if (document.getElementById('admin-bar').style.display === 'flex') {
         newItem.setAttribute('contenteditable', 'true');
     }
-    markAsEdited();
 };
 
 window.removeLastEducationItem = function () {
     const container = document.getElementById('editable-education-container');
     const items = container.querySelectorAll('.project-card');
-    if (items.length > 1) {
-        container.removeChild(items[items.length - 1]);
-        markAsEdited();
-    } else {
-        alert("Cannot remove the last item. You can edit it instead.");
-    }
+    if (items.length > 1) container.removeChild(items[items.length - 1]);
 };
 
 window.addLanguageItem = function () {
     const container = document.getElementById('editable-languages');
-    if (!container) return;
     const items = container.querySelectorAll('li');
     if (items.length === 0) return;
-
     const newItem = items[0].cloneNode(true);
-    newItem.innerHTML = '<i class="fas fa-check text-secondary" style="color: var(--accent-color);"></i> New Language';
-
     container.appendChild(newItem);
-    markAsEdited();
 };
 
 window.removeLastLanguageItem = function () {
     const container = document.getElementById('editable-languages');
-    if (!container) return;
     const items = container.querySelectorAll('li');
-    if (items.length > 1) {
-        container.removeChild(items[items.length - 1]);
-        markAsEdited();
-    } else {
-        alert("Cannot remove the last item.");
-    }
-}
+    if (items.length > 1) container.removeChild(items[items.length - 1]);
+};
 
 window.addSkillCategory = function () {
     const container = document.getElementById('editable-skills');
-    if (!container) return;
     const items = container.querySelectorAll('.skill-card');
     if (items.length === 0) return;
-
     const newItem = items[0].cloneNode(true);
-    const ul = newItem.querySelector('ul');
-    if (ul) {
-        ul.innerHTML = '<li><i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> New Skill</li>';
-    }
     container.appendChild(newItem);
-
-    if (document.getElementById('admin-bar').style.display === 'flex') {
-        newItem.setAttribute('contenteditable', 'true');
-    }
-    markAsEdited();
-}
+    if (document.getElementById('admin-bar').style.display === 'flex') newItem.setAttribute('contenteditable', 'true');
+};
 
 window.removeLastSkillCategory = function () {
     const container = document.getElementById('editable-skills');
-    if (!container) return;
     const items = container.querySelectorAll('.skill-card');
-    if (items.length > 1) {
-        container.removeChild(items[items.length - 1]);
-        markAsEdited();
-    } else {
-        alert("Cannot remove the last category.");
-    }
-}
+    if (items.length > 1) container.removeChild(items[items.length - 1]);
+};
 
 window.addSkillItem = function () {
-    const container = document.getElementById('editable-skills');
-    if (!container) return;
-    const skillCards = container.querySelectorAll('.skill-card');
+    const skillCards = document.querySelectorAll('.skill-card');
     if (skillCards.length === 0) return;
-    // Add to the LAST skill category
     const lastCard = skillCards[skillCards.length - 1];
     const ul = lastCard.querySelector('ul');
     if (ul) {
         const li = document.createElement('li');
-        li.innerHTML = '<i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> New Added Skill';
+        li.innerHTML = '<i class="fas fa-check-circle accent" style="margin-right: 10px;"></i> New Skill';
         ul.appendChild(li);
-        markAsEdited();
     }
-}
+};
 
 window.removeLastSkillItem = function () {
-    const container = document.getElementById('editable-skills');
-    if (!container) return;
-    const skillCards = container.querySelectorAll('.skill-card');
+    const skillCards = document.querySelectorAll('.skill-card');
     if (skillCards.length === 0) return;
-
-    // Remove from the LAST skill category
     const lastCard = skillCards[skillCards.length - 1];
     const ul = lastCard.querySelector('ul');
-    if (ul) {
-        const items = ul.querySelectorAll('li');
-        if (items.length > 1) {
-            ul.removeChild(items[items.length - 1]);
-            markAsEdited();
-        } else {
-            alert("Cannot remove the last bullet point in this category.");
-        }
+    if (ul && ul.querySelectorAll('li').length > 1) {
+        ul.removeChild(ul.lastElementChild);
     }
+};
+
+window.triggerImageUpload = function(imgElement) {
+    let newLink = prompt("Enter the New Image URL:", imgElement.src);
+    if (newLink && newLink.trim() !== "") {
+        newLink = convertGDriveLink(newLink.trim());
+        imgElement.src = newLink;
+        const parentRegion = imgElement.closest('.editable-region');
+        if (parentRegion) {
+            _supabase.from('resume_sections').upsert({
+                id: parentRegion.id,
+                html_content: parentRegion.innerHTML
+            });
+        }
+        alert("Image updated!");
+    }
+};
+
+function convertGDriveLink(url) {
+    if (!url) return url;
+    if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
+        let match = url.match(/\/file\/d\/([a-zA-Z0-9_\-]+)/);
+        if (match && match[1]) return `https://lh3.googleusercontent.com/d/${match[1]}`;
+        match = url.match(/[?&]id=([a-zA-Z0-9_\-]+)/);
+        if (match && match[1]) return `https://lh3.googleusercontent.com/d/${match[1]}`;
+    }
+    return url;
 }
 
-// Override Login/Logout specifically for Add/Remove buttons display
+// 8. Authentication Logic (FINAL)
 if (btnLogin) {
     btnLogin.addEventListener('click', () => {
         const currentPin = localStorage.getItem('resume_admin_pin') || '1914';
+        const adminBar = document.getElementById('admin-bar');
         if (pinInput.value === currentPin) {
             loginModal.style.display = 'none';
             adminBar.style.display = 'flex';
             toggleAdminControls(true);
             editableRegions.forEach(el => el.setAttribute('contenteditable', 'true'));
             resetModals();
-            // Re-render reviews to show delete buttons
             const reviews = JSON.parse(localStorage.getItem('employer_reviews')) || [];
             renderReviews(reviews);
             updateResetButtonVisibility();
@@ -786,12 +640,28 @@ if (btnLogin) {
 
 if (btnLogout) {
     btnLogout.addEventListener('click', () => {
+        const adminBar = document.getElementById('admin-bar');
         adminBar.style.display = 'none';
         toggleAdminControls(false);
         editableRegions.forEach(el => el.setAttribute('contenteditable', 'false'));
-        // Re-render reviews to hide delete buttons
         const reviews = JSON.parse(localStorage.getItem('employer_reviews')) || [];
         renderReviews(reviews);
         updateResetButtonVisibility();
     });
 }
+
+// 9. Contact Form Submission (Traditional Method)
+const contactForm = document.getElementById('contact-form');
+const btnSubmitContact = document.getElementById('btn-submit-contact');
+
+if (contactForm) {
+    contactForm.addEventListener('submit', () => {
+        // Just show a visual indicator before the browser redirects
+        if (btnSubmitContact) {
+            btnSubmitContact.disabled = true;
+            btnSubmitContact.innerHTML = 'Sending... <i class="fas fa-spinner fa-spin"></i>';
+        }
+        // No preventDefault() here to allow traditional form submission
+    });
+}
+
