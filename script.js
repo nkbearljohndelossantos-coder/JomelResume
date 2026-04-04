@@ -527,6 +527,13 @@ window.triggerImageUpload = function(imgElement) {
         
         imgElement.src = newLink;
         markAsEdited();
+        
+        // Auto-save this specific region
+        const parentRegion = imgElement.closest('.editable-region');
+        if (parentRegion && parentRegion.id) {
+            localStorage.setItem('resume_content_v2_' + parentRegion.id, parentRegion.innerHTML);
+        }
+        
         alert("Picture updated successfully! (Note: Make sure your GDrive link is set to 'Anyone with the link can view')");
     }
 };
