@@ -524,9 +524,9 @@ if (btnSavePin) {
 }
 
 // 7. Element Management
-const adminControls = document.querySelectorAll('.admin-controls');
 function toggleAdminControls(show) {
-    adminControls.forEach(control => control.style.display = show ? 'block' : 'none');
+    const adminControlsList = document.querySelectorAll('.admin-controls');
+    adminControlsList.forEach(control => control.style.display = show ? 'block' : 'none');
     toggleAdminImageOverlays(show);
 }
 
