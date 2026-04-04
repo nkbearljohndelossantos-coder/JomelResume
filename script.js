@@ -497,14 +497,37 @@ window.removeLastPortfolioItem = function () {
 };
 
 // Image Link Logic
+function convertGDriveLink(url) {
+    if (!url) return url;
+    
+    // Check if it's a Google Drive link
+    if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
+        // Pattern 1: /file/d/FILE_ID/...
+        let match = url.match(/\/file\/d\/([a-zA-Z0-9_\-]+)/);
+        if (match && match[1]) {
+            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+        }
+        
+        // Pattern 2: ?id=FILE_ID
+        match = url.match(/[?&]id=([a-zA-Z0-9_\-]+)/);
+        if (match && match[1]) {
+            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+        }
+    }
+    return url;
+}
+
 window.triggerImageUpload = function(imgElement) {
     const currentSrc = imgElement.src;
-    const newLink = prompt("Enter the New Image URL (e.g., GDrive image link or any direct image URL):", currentSrc);
+    let newLink = prompt("Enter the New Image URL (e.g., GDrive image share link or any direct image URL):", currentSrc);
     
     if (newLink !== null && newLink.trim() !== "") {
+        // Automatically convert GDrive viewer links to direct image links
+        newLink = convertGDriveLink(newLink.trim());
+        
         imgElement.src = newLink;
         markAsEdited();
-        alert("Picture updated successfully!");
+        alert("Picture updated successfully! (Note: Make sure your GDrive link is set to 'Anyone with the link can view')");
     }
 };
 
