@@ -1060,3 +1060,70 @@ footer p {
 .modal-input:focus {
     border-color: var(--accent-color);
 }
+
+/* -------------------------------------------------------------------------- */
+/*                          Mobile Responsiveness Improvements                */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 992px) {
+    #typewriter-name {
+        font-size: 3.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    #typewriter-name {
+        font-size: 2.8rem; /* Scaled down for mobile */
+        line-height: 1.2;
+    }
+
+    .hero-content p.subtitle {
+        font-size: 1rem;
+    }
+
+    #static-role {
+        font-size: 1.4rem !important;
+        margin-bottom: 1rem;
+    }
+
+    .projects-grid {
+        grid-template-columns: 1fr;
+        padding: 0 1rem;
+        gap: 2rem;
+    }
+
+    .contact-container {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+    }
+
+    .about-content {
+        padding: 0 1rem;
+    }
+
+    /* Form improvements on mobile */
+    .contact-form, .review-form {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 auto;
+    }
+
+    /* Sidebar/Contact Info adjustments */
+    .contact-info {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #typewriter-name {
+        font-size: 2.2rem;
+    }
+
+    .section-title {
+        font-size: 2rem;
+    }
+
+    .hero-container {
+        padding-top: 100px;
+    }
+}
