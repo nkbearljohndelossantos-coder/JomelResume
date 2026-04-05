@@ -382,9 +382,12 @@ function resetModals() {
 
 // 7. Load Data from Supabase on Startup
 document.addEventListener('DOMContentLoaded', async () => {
-    // Initial UI state
+    // Initial UI state - STRICT: Ensure nothing is editable on load
     toggleAdminControls(false);
     toggleAdminImageOverlays(false);
+    document.querySelectorAll('.editable-region').forEach(el => {
+        el.setAttribute('contenteditable', 'false');
+    });
 
     try {
         if (!_supabase) {
@@ -399,7 +402,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Section Content
                 const region = document.getElementById(item.id);
                 if (region && item.id.startsWith('editable-')) {
-                    let cleanedContent = item.html_content;
+                    // SANITIZE: Remove any accidentally saved contenteditable tags
+                    let cleanedContent = item.html_content.replace(/\scontenteditable="true"/g, ' contenteditable="false"').replace(/\scontenteditable='true'/g, " contenteditable='false'");
 
                     // SMART CLEANUP: If this is the about section, strip out any legacy nested languages
                     if (item.id === 'editable-about') {
@@ -731,6 +735,7 @@ if (btnLogin) {
             loginModal.style.display = 'none';
             adminBar.style.display = 'flex';
             toggleAdminControls(true);
+            document.body.classList.add('admin-bar-active');
             editableRegions.forEach(el => el.setAttribute('contenteditable', 'true'));
             resetModals();
             const reviews = JSON.parse(localStorage.getItem('employer_reviews')) || [];
@@ -747,6 +752,7 @@ if (btnLogout) {
         const adminBar = document.getElementById('admin-bar');
         adminBar.style.display = 'none';
         toggleAdminControls(false);
+        document.body.classList.remove('admin-bar-active');
         editableRegions.forEach(el => el.setAttribute('contenteditable', 'false'));
         const reviews = JSON.parse(localStorage.getItem('employer_reviews')) || [];
         renderReviews(reviews);
