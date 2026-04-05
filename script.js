@@ -5,10 +5,16 @@ const navLinks = document.querySelector('.nav-links');
 const navLinksList = document.querySelectorAll('.nav-links a');
 const sections = document.querySelectorAll('section');
 
-// Supabase Configuration
-const supabaseUrl = 'https://wscrpoghwxrcgzzajzaw.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzY3Jwb2dod3hyY2d6emFqemF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNTI4NDAsImV4cCI6MjA5MDgyODg0MH0.x6Y5ICkNlPGCbvTvRIC0RX9m8HpXkabT6D1vldN4x_k';
-const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+let _supabase;
+try {
+    if (typeof supabase !== 'undefined') {
+        const supabaseUrl = 'https://wscrpoghwxrcgzzajzaw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzY3Jwb2dod3hyY2d6emFqemF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNTI4NDAsImV4cCI6MjA5MDgyODg0MH0.x6Y5ICkNlPGCbvTvRIC0RX9m8HpXkabT6D1vldN4x_k';
+        _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    }
+} catch (e) {
+    console.warn("Supabase failed to initialize, using local mode.");
+}
 
 // 1. Navigation Background on Scroll
 window.addEventListener('scroll', () => {
@@ -109,32 +115,66 @@ revealElements.forEach(el => {
 
 // 5. Typewriter Effect Logic for the NAME
 function initRoleTypewriter() {
-    const roleElement = document.getElementById('static-role');
-    if (roleElement) {
-        const text = roleElement.textContent.trim() || "Multi-Skilled Technical Specialist";
-        roleElement.textContent = '';
-        roleElement.style.display = 'inline-block';
-        roleElement.style.borderRight = 'none'; // Explicitly remove any line
-        
-        let charIndex = 0;
-        let typingSpeed = 100;
-
-        function type() {
-            if (charIndex < text.length) {
-                roleElement.textContent += text.charAt(charIndex);
-                charIndex++;
-                setTimeout(type, typingSpeed);
-            } else {
-                // Wait 3 seconds then RESTART the animation for "tuloy-tuloy" effect
-                setTimeout(() => {
-                    roleElement.textContent = '';
-                    charIndex = 0;
-                    type();
-                }, 3000);
-            }
-        }
-        type();
+    let roleElement = document.getElementById('static-role');
+    
+    // Fallback if the Supabase load replaced the ID-bearing element
+    if (!roleElement) {
+        roleElement = document.querySelector('.static-role');
     }
+    
+    // Final fallback: look for h2 within the hero section if all else fails
+    if (!roleElement) {
+        roleElement = document.querySelector('.hero-content h2');
+    }
+
+    if (!roleElement) return;
+
+    const roles = [
+        "Multi-Skilled Technical Specialist",
+        "Maintenance & Operations Checker",
+        "Professional Mason & Tile Setter",
+        "Quality & Safety Inspector"
+    ];
+
+    let roleIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    let typingSpeed = 100;
+
+    // Create cursor element only if it doesn't already exist
+    let cursor = roleElement.parentNode.querySelector('.role-cursor');
+    if (!cursor) {
+        cursor = document.createElement('span');
+        cursor.className = 'role-cursor';
+        roleElement.parentNode.insertBefore(cursor, roleElement.nextSibling);
+    }
+
+    function type() {
+        const currentRole = roles[roleIndex];
+        
+        if (isDeleting) {
+            roleElement.textContent = currentRole.substring(0, charIndex - 1);
+            charIndex--;
+            typingSpeed = 50; // Faster deletion
+        } else {
+            roleElement.textContent = currentRole.substring(0, charIndex + 1);
+            charIndex++;
+            typingSpeed = 100; // Normal typing
+        }
+
+        if (!isDeleting && charIndex === currentRole.length) {
+            isDeleting = true;
+            typingSpeed = 2000; // Wait at end of typing
+        } else if (isDeleting && charIndex === 0) {
+            isDeleting = false;
+            roleIndex = (roleIndex + 1) % roles.length;
+            typingSpeed = 500; // Wait before next role
+        }
+
+        setTimeout(type, typingSpeed);
+    }
+
+    type();
 }
 
 function initNameTypewriter() {
@@ -144,7 +184,7 @@ function initNameTypewriter() {
         typeWriterElement.classList.remove('typewriter');
         typeWriterElement.style.borderRight = 'none';
         typeWriterElement.style.animation = 'none';
-        
+
         // Start Role Animation INSTANTLY (0 delay)
         initRoleTypewriter();
     }
@@ -156,7 +196,7 @@ const reviewsContainer = document.getElementById('reviews-container');
 function renderReviews(reviews) {
     if (!reviewsContainer) return;
     reviewsContainer.innerHTML = '';
-    
+
     // Check if we are currently in admin mode
     const adminBar = document.getElementById('admin-bar');
     const isAdmin = adminBar && adminBar.style.display === 'flex';
@@ -169,7 +209,7 @@ function renderReviews(reviews) {
     reviews.forEach(review => {
         const card = document.createElement('div');
         card.className = 'review-card glass reveal active';
-        
+
         let deleteBtn = '';
         if (isAdmin) {
             deleteBtn = `<button class="review-delete-btn" onclick="deleteReview(${review.id})"><i class="fas fa-trash"></i> Delete</button>`;
@@ -191,9 +231,9 @@ function renderReviews(reviews) {
 }
 
 // Global function for deleting reviews
-window.deleteReview = async function(id) {
+window.deleteReview = async function (id) {
     if (!confirm("Are you sure you want to delete this review?")) return;
-    
+
     try {
         // 1. Fetch latest from DB to ensure sync
         const { data, error: fetchError } = await _supabase
@@ -201,20 +241,20 @@ window.deleteReview = async function(id) {
             .select('html_content')
             .eq('id', 'employer_reviews')
             .single();
-            
+
         if (fetchError) throw fetchError;
-        
+
         let reviews = JSON.parse(data.html_content) || [];
         reviews = reviews.filter(r => r.id !== id);
-        
+
         // 2. Save back to DB
         const { error: upsertError } = await _supabase.from('resume_sections').upsert({
             id: 'employer_reviews',
             html_content: JSON.stringify(reviews)
         });
-        
+
         if (upsertError) throw upsertError;
-        
+
         // 3. Update UI and LocalStorage
         localStorage.setItem('employer_reviews', JSON.stringify(reviews));
         renderReviews(reviews);
@@ -229,14 +269,14 @@ const reviewForm = document.getElementById('review-form');
 if (reviewForm) {
     reviewForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const btnSubmit = reviewForm.querySelector('button[type="submit"]');
         const originalBtnText = btnSubmit.innerHTML;
-        
+
         const name = document.getElementById('review-name').value;
         const position = document.getElementById('review-position').value;
         const content = document.getElementById('review-content').value;
-        
+
         const newReview = {
             id: Date.now(),
             name: name,
@@ -244,7 +284,7 @@ if (reviewForm) {
             content: content,
             date: new Date().toISOString()
         };
-        
+
         try {
             // Visual Feedback
             btnSubmit.disabled = true;
@@ -263,18 +303,18 @@ if (reviewForm) {
             } else if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 means row not found, which is fine
                 throw fetchError;
             }
-            
+
             // 2. Add new review
             reviews.push(newReview);
-            
+
             // 3. Save to Supabase
             const { error: upsertError } = await _supabase.from('resume_sections').upsert({
                 id: 'employer_reviews',
                 html_content: JSON.stringify(reviews)
             });
-            
+
             if (upsertError) throw upsertError;
-            
+
             // 4. Update UI and Local Cache
             localStorage.setItem('employer_reviews', JSON.stringify(reviews));
             renderReviews(reviews);
@@ -347,6 +387,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     toggleAdminImageOverlays(false);
 
     try {
+        if (!_supabase) {
+            renderReviews([]);
+            return;
+        }
         const { data, error } = await _supabase.from('resume_sections').select('*');
         if (error) throw error;
 
@@ -370,18 +414,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                         cleanedContent = temp.innerHTML;
                     }
 
-                    // SMART CLEANUP: If this is the hero section, strip out any duplicate legacy H1 name
+                    // SMART CLEANUP: Ensure the HERO section contains the correct role and doesn't show old text
                     if (item.id === 'editable-hero') {
                         const temp = document.createElement('div');
                         temp.innerHTML = cleanedContent;
                         const legacyH1 = temp.querySelector('h1');
                         if (legacyH1) legacyH1.remove(); // Remove the non-animated name from the DB
+                        
+                        // FORCE: Find any headers and ensure they don't say Technical Support Specialist
+                        const header = temp.querySelector('h2');
+                        if (header) {
+                            if (header.textContent.trim() === "Technical Support Specialist") {
+                                header.textContent = "Multi-Skilled Technical Specialist";
+                                header.id = "static-role"; // Ensure ID is present for the typewriter
+                                header.className = "static-role"; // Ensure class is present
+                            }
+                        }
+                        
                         cleanedContent = temp.innerHTML;
                     }
 
                     region.innerHTML = cleanedContent;
                 }
-                
+
                 // Resume Download Link
                 if (item.id === 'resume_link') {
                     const resumeLinkElement = document.getElementById('resume-download-link');
@@ -390,7 +445,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         localStorage.setItem('resume_link', item.html_content);
                     }
                 }
-                
+
                 // Employer Reviews
                 if (item.id === 'employer_reviews') {
                     try {
@@ -455,7 +510,7 @@ if (btnSaveContent) {
         btnSaveContent.disabled = true;
 
         const { error } = await _supabase.from('resume_sections').upsert(sectionsToSave);
-        
+
         btnSaveContent.textContent = "Save Changes";
         btnSaveContent.disabled = false;
 
@@ -473,12 +528,12 @@ if (btnUpdateResumeLink) {
     btnUpdateResumeLink.addEventListener('click', async () => {
         const currentLink = localStorage.getItem('resume_link') || "https://drive.google.com/file/d/1D_qBtZvgGN0AZkoV10E4_caC23HmxwSr/view?usp=sharing";
         const newLink = prompt("Enter the new URL for your Resume:", currentLink);
-        
+
         if (newLink && newLink.trim() !== "") {
             localStorage.setItem('resume_link', newLink);
             const resumeLinkBtn = document.getElementById('resume-download-link');
             if (resumeLinkBtn) resumeLinkBtn.href = newLink;
-            
+
             await _supabase.from('resume_sections').upsert({
                 id: 'resume_link',
                 html_content: newLink
@@ -640,7 +695,7 @@ window.removeLastSkillItem = function () {
     }
 };
 
-window.triggerImageUpload = function(imgElement) {
+window.triggerImageUpload = function (imgElement) {
     let newLink = prompt("Enter the New Image URL:", imgElement.src);
     if (newLink && newLink.trim() !== "") {
         newLink = convertGDriveLink(newLink.trim());
