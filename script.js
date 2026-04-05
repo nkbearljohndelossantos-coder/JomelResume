@@ -420,19 +420,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     // SMART CLEANUP: Ensure the HERO section contains the correct role and doesn't show old text
                     if (item.id === 'editable-hero') {
+                        // Aggressive text replacement to clean up anywhere the old role is mentioned
+                        cleanedContent = cleanedContent.replace(/Technical Support Specialist/g, "Multi-Skilled Technical Specialist");
+                        cleanedContent = cleanedContent.replace(/Technical Support/g, "Technical Specialist");
+                        
                         const temp = document.createElement('div');
                         temp.innerHTML = cleanedContent;
                         const legacyH1 = temp.querySelector('h1');
                         if (legacyH1) legacyH1.remove(); // Remove the non-animated name from the DB
                         
-                        // FORCE: Find any headers and ensure they don't say Technical Support Specialist
+                        // FORCE: Find any headers and ensure they have IDs for the typewriter
                         const header = temp.querySelector('h2');
                         if (header) {
-                            if (header.textContent.trim() === "Technical Support Specialist") {
-                                header.textContent = "Multi-Skilled Technical Specialist";
-                                header.id = "static-role"; // Ensure ID is present for the typewriter
-                                header.className = "static-role"; // Ensure class is present
-                            }
+                            header.id = "static-role"; // Ensure ID is present for the typewriter
+                            header.className = "static-role"; // Ensure class is present
                         }
                         
                         cleanedContent = temp.innerHTML;
@@ -700,6 +701,9 @@ window.removeLastSkillItem = function () {
 };
 
 window.triggerImageUpload = function (imgElement) {
+    // SECURITY: Only allow changes if admin mode is active
+    if (!document.body.classList.contains('admin-bar-active')) return;
+
     let newLink = prompt("Enter the New Image URL:", imgElement.src);
     if (newLink && newLink.trim() !== "") {
         newLink = convertGDriveLink(newLink.trim());
