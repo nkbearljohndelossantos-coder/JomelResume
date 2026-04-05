@@ -869,7 +869,7 @@ footer p {
     font-size: 0.85rem;
 }
 
-.editable-region[contenteditable="true"] {
+body.admin-bar-active .editable-region[contenteditable="true"] {
     position: relative;
     outline: 2px dashed rgba(99, 102, 241, 0.5);
     outline-offset: 4px;
