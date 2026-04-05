@@ -234,8 +234,8 @@ h3 {
 
 .typewriter {
     display: inline-block;
-    border-right: 4px solid var(--accent-color);
-    padding-right: 10px;
+    border-right: 2px solid var(--accent-color);
+    padding-right: 6px;
     animation: blink-cursor 0.75s step-end infinite;
     white-space: nowrap;
 }
@@ -250,6 +250,13 @@ h3 {
     font-size: 2rem;
     color: var(--text-secondary);
     margin-bottom: 2.5rem;
+    display: inline-block;
+}
+
+.role-cursor {
+    border-right: 2px solid var(--accent-color);
+    margin-left: 5px;
+    animation: blink-cursor 0.75s step-end infinite;
 }
 
 @keyframes blink-cursor {
