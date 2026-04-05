@@ -999,8 +999,8 @@ body.admin-bar-active .editable-region[contenteditable="true"] {
     display: flex; /* Show only when active */
 }
 
-.project-image:hover .admin-image-overlay,
-.image-wrapper:hover .admin-image-overlay {
+body.admin-bar-active .project-image:hover .admin-image-overlay,
+body.admin-bar-active .image-wrapper:hover .admin-image-overlay {
     opacity: 1;
 }
 
